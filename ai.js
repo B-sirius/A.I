@@ -10,6 +10,7 @@ let AI = function(imgSrc, style) {
     this._init();
 }
 
+// 初始化
 AI.prototype._init = function() {
     let el = new Image();
     el.src = this.imgSrc;
@@ -23,8 +24,11 @@ AI.prototype._init = function() {
     let _self = this;
     loadPromise.then(() => {
         _self.el = el;
-
+        // 设定样式
         _self.setStyle(this.style);
+
+        _self.width = getNum(this.el.style.width);
+        _self.height = getNum(this.el.style.height);
 
         // 设定坐标系依据
         if (this.style.right !== '') {
@@ -45,41 +49,91 @@ AI.prototype._init = function() {
         // 插入dom
         document.body.insertBefore(el, document.body.firstChild);
 
-        // 绑定事件
-        let drag = throttleFn(_self.drag, 16, this);
-
-        let startDrag = function(e) {
-            e.preventDefault();
-
-            // 记录鼠标按下时的位置，注意这个位置是相对左上角的
-            _self.oldPos = {
-                x: e.clientX,
-                y: e.clientY
-            };
-            // 此时相关的style属性值
-            _self.oldStyle = {
-                x: parseFloat(_self.el.style[_self.xKey].slice(0, -2)),
-                y: parseFloat(_self.el.style[_self.yKey].slice(0, -2))
-            }
-
-            el.addEventListener('mousemove', drag);
-        }
-
-        let stopDrag = function() {
-            el.removeEventListener('mousemove', drag);
-        }
-
-        el.addEventListener('mousedown', startDrag);
-        document.body.addEventListener('mouseup', stopDrag);
+        // 绑定拖拽
+        this.supportDrag();
     });
 }
 
+// 初始化对拖拽的支持
+AI.prototype.supportDrag = function() {
+    let drag = throttleFn(this.drag, 16, this);
+
+    let _self = this;
+    let startDrag = function(e) {
+        e.preventDefault();
+
+        // 记录鼠标按下时的位置，注意这个位置是相对左上角的
+        _self.oldPos = {
+            x: e.clientX,
+            y: e.clientY
+        };
+        // 此时相关的style属性值
+        _self.oldStyle = {
+            x: getNum(_self.el.style[_self.xKey]),
+            y: getNum(_self.el.style[_self.yKey])
+        }
+
+        window.addEventListener('mousemove', drag);
+    }
+
+    let stopDrag = function() {
+        window.removeEventListener('mousemove', drag);
+    }
+
+    this.el.addEventListener('mousedown', startDrag);
+    window.addEventListener('mouseup', stopDrag);
+}
+
+// 拖拽
+AI.prototype.drag = function(e) {
+    let newPos = {
+        x: e.clientX,
+        y: e.clientY
+    };
+
+    // 移动的距离差，
+    let dx = newPos.x - this.oldPos.x;
+    let dy = newPos.y - this.oldPos.y;
+
+
+    let mapWidth = document.documentElement.clientWidth;
+    let mapHeight = document.documentElement.clientHeight;
+
+    // 碰撞检测
+    let x = this.oldStyle.x + dx * this.xBase;
+    if (x < 0 || x >  mapWidth - this.width) {
+        if (x < 0) {
+            x = 0;
+        } else {
+            x = mapWidth - this.width;
+        }
+    }
+
+    let y = this.oldStyle.y + dy * this.yBase;
+    if (y < 0 || y >  mapHeight - this.height) {
+        if (y < 0) {
+            y = 0;
+        } else {
+            y = mapHeight - this.height;
+        }
+    }
+
+    let style = {};
+
+    style[this.xKey] = x + 'px';
+    style[this.yKey] = y + 'px';
+
+    this.setStyle(style);
+}
+
+// 样式迭代器
 AI.prototype.setStyle = function(style) {
     for (let key in style) {
         this.el.style[key] = style[key];
     }
 }
 
+// 射爆！
 AI.prototype.launch = function() {
     let speed = 30; // 速度，帧为单位
     let attrition = 5 / 60; // 速度损耗，同样帧为单位
@@ -88,13 +142,8 @@ AI.prototype.launch = function() {
     let mapWidth = document.documentElement.clientWidth;
     let mapHeight = document.documentElement.clientHeight;
 
-    let elWidth = parseFloat(this.el.style.width.slice(0, -2)); // 只考虑px
-    let elHeight = parseFloat(this.el.style.height.slice(0, -2));
-
-    
-
-    let x = parseFloat(this.el.style[this.xKey].slice(0, -2));
-    let y = parseFloat(this.el.style[this.yKey].slice(0, -2));
+    let x = getNum(this.el.style[this.xKey]);
+    let y = getNum(this.el.style[this.yKey]);
 
     let _self = this;
     let nextMove = function() {
@@ -106,14 +155,14 @@ AI.prototype.launch = function() {
         y += dy;
 
         // 碰撞检测
-        if (x < 0 || x > mapWidth - elWidth) {
+        if (x < 0 || x > mapWidth - _self.width) {
             angle = -angle + Math.PI;
-            x = x < 0 ? 0 : mapWidth - elWidth;
+            x = x < 0 ? 0 : mapWidth - _self.width;
         }
 
-        if (y < 0 || y > mapHeight - elHeight) {
+        if (y < 0 || y > mapHeight - _self.width) {
             angle = -angle;
-            y = y < 0 ? 0 : mapHeight - elHeight;
+            y = y < 0 ? 0 : mapHeight - _self.height;
         }
 
         // 设置样式
@@ -134,23 +183,7 @@ AI.prototype.launch = function() {
     requestAnimationFrame(nextMove);
 }
 
-AI.prototype.drag = function(e) {
-    let newPos = {
-        x: e.clientX,
-        y: e.clientY
-    };
-
-    // 移动的距离差，
-    let dx = newPos.x - this.oldPos.x;
-    let dy = newPos.y - this.oldPos.y;
-
-    let style = {};
-    style[this.xKey] = this.oldStyle.x + dx * this.xBase + 'px';
-    style[this.yKey] = this.oldStyle.y + dy * this.yBase + 'px';
-
-    this.setStyle(style);
-}
-
+// 节流函数
 let throttleFn = function(fn, minInterval, context) {
     let timeoutId = null;
 
@@ -163,6 +196,11 @@ let throttleFn = function(fn, minInterval, context) {
             }, minInterval);
         }
     }
+}
+
+// 从样式中获得数字，只考虑px
+let getNum = function(value) {
+    return parseFloat(value.slice(0, -2));
 }
 
 window.AI = AI;
