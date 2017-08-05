@@ -51,17 +51,34 @@ AI.prototype._init = function() {
 
         // 绑定拖拽
         this.supportDrag();
+        this.supportMenu();
     });
 }
 
-// 初始化对拖拽的支持
+// 初始化对右键菜单的支持
+AI.prototype.supportMenu = function() {
+    let _self = this;
+    // 点击ai时屏蔽右键菜单
+    window.oncontextmenu = function(e) {
+        if (e.target === _self.el) {
+            return false;
+        }
+    }
+
+    this.el.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        if (e.button === 2) { // 右键
+            
+        }
+    });
+}
+
+// 初始化对左键拖拽的支持
 AI.prototype.supportDrag = function() {
     let drag = throttleFn(this.drag, 16, this);
 
     let _self = this;
     let startDrag = function(e) {
-        e.preventDefault();
-
         // 记录鼠标按下时的位置，注意这个位置是相对左上角的
         _self.oldPos = {
             x: e.clientX,
@@ -80,7 +97,12 @@ AI.prototype.supportDrag = function() {
         window.removeEventListener('mousemove', drag);
     }
 
-    this.el.addEventListener('mousedown', startDrag);
+    this.el.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        if (e.button === 0) { // 左键
+            startDrag(e);
+        }
+    });
     window.addEventListener('mouseup', stopDrag);
 }
 
@@ -201,6 +223,12 @@ let throttleFn = function(fn, minInterval, context) {
 // 从样式中获得数字，只考虑px
 let getNum = function(value) {
     return parseFloat(value.slice(0, -2));
+}
+
+let MenuView = {
+    generate: function() {
+        
+    }
 }
 
 window.AI = AI;
