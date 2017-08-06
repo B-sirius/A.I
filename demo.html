@@ -3,46 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>A.I demo</title>
-    <style>
-        .chat-box {
-            font-family: 'Microsoft Yahei','Helvetica Neue','Helvetica','Arial',sans-serif;
-            position: relative;
-            width: 160px;
-            padding: 5px;
-            border: 1px solid #CE716B;
-            border-radius: 3px;
-            overflow: hidden;
-            background: rgba(253, 240, 180, 0.8);
-        }
-        .content {
-            font-size: 12px;
-        }
-        .btn {
-            float: right;
-            color: #CE716B;
-            font-size: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="ai.css">
 </head>
 <body>
-    <div class="chat-box">
-        <div class="content">
-            <p class="text">带带带！</p>
+    <div class="ai-chat-box">
+        <div class="ai-content">
+            <p class="ai-text">带带带！</p>
         </div>
-        <a href="javascript:" class="btn">
+        <a href="javascript:" class="ai-btn">
             menu
         </a>
     </div>
     <script src="ai.js"></script>
     <script>
-        var style = {
+        var containerStyle = {
             width: '60px',
             height: '48px',
             position: 'fixed',
             right: 0,
             bottom: '100px'
         }
-        var aDog = new AI('dog.gif', style);
+        let imgStyle = {
+            width: '60px',
+            height: '48px',
+        }
+        var aDog = new AI('dog.gif', containerStyle, imgStyle);
     </script>
 </body>
 </html>

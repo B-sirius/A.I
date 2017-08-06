@@ -1,0 +1,26 @@
+.ai-chat-box {
+    font-family: 'Microsoft Yahei', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    width: 160px;
+    padding: 5px;
+    border: 1px solid #CE716B;
+    border-radius: 3px;
+    overflow: hidden;
+    background: rgba(253, 240, 180, 0.8);
+}
+
+.ai-content {
+}
+
+.ai-text {
+    font-size: 12px;
+}
+
+.ai-line {
+    overflow: hidden;
+}
+
+.ai-btn {
+    float: right;
+    color: #CE716B;
+    font-size: 12px;
+}

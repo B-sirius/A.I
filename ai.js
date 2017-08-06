@@ -1,8 +1,9 @@
 'use strict';
 
-let AI = function(imgSrc, style) {
+let AI = function(imgSrc, containerStyle, imgStyle) {
     this.imgSrc = imgSrc;
-    this.style = style;
+    this.style = containerStyle;
+    this.imgStyle = imgStyle;
 
     this.xBase = 1;
     this.yBase = 1;
@@ -12,20 +13,22 @@ let AI = function(imgSrc, style) {
 
 // 初始化
 AI.prototype._init = function() {
-    let el = new Image();
-    el.src = this.imgSrc;
+    this.el = createElement('div', 'ai-container');
+
+    let img = new Image();
+    img.src = this.imgSrc;
+    setStyle(img, this.imgStyle);
 
     let loadPromise = new Promise((resolve, reject) => {
-        el.onload = function() {
+        img.onload = function() {
             resolve();
         }
     });
 
     let _self = this;
     loadPromise.then(() => {
-        _self.el = el;
         // 设定样式
-        _self.setStyle(this.style);
+        setStyle(this.el, this.style);
 
         _self.width = getNum(this.el.style.width);
         _self.height = getNum(this.el.style.height);
@@ -47,7 +50,8 @@ AI.prototype._init = function() {
         }
 
         // 插入dom
-        document.body.insertBefore(el, document.body.firstChild);
+        _self.el.appendChild(img);
+        document.body.insertBefore(_self.el, document.body.firstChild);
 
         // 绑定拖拽
         this.supportDrag();
@@ -145,14 +149,7 @@ AI.prototype.drag = function(e) {
     style[this.xKey] = x + 'px';
     style[this.yKey] = y + 'px';
 
-    this.setStyle(style);
-}
-
-// 样式迭代器
-AI.prototype.setStyle = function(style) {
-    for (let key in style) {
-        this.el.style[key] = style[key];
-    }
+    setStyle(this.el, style);
 }
 
 // 射爆！
@@ -191,7 +188,7 @@ AI.prototype.launch = function() {
         let style = {};
         style[_self.xKey] = x + 'px';
         style[_self.yKey] = y + 'px';
-        _self.setStyle(style);
+        setStyle(_self.el, style);
 
         // 速度损耗
         speed -= attrition;
@@ -203,6 +200,22 @@ AI.prototype.launch = function() {
     }
 
     requestAnimationFrame(nextMove);
+}
+
+let AImenu = function() {
+    this.el = this.createEl();
+}
+
+AImenu.prototype.getTextContent = function(text) {
+    let html = 
+    `<div class="ai-chat-box">
+        <div class="ai-content">
+            <p class="ai-text">${text}</p>
+        </div>
+        <a href="javascript:" class="ai-btn">
+            menu
+        </a>
+    </div>`
 }
 
 // 节流函数
@@ -225,9 +238,18 @@ let getNum = function(value) {
     return parseFloat(value.slice(0, -2));
 }
 
-let MenuView = {
-    generate: function() {
-        
+let createElement = function(tag, className, id) {
+    let el = document.createElement(tag);
+    el.className = className || '';
+    el.id = id || '';
+
+    return el;
+}
+
+// 样式迭代器
+let setStyle = function(el, style) {
+    for (let key in style) {
+        el.style[key] = style[key];
     }
 }
 
