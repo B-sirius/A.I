@@ -1,26 +1,52 @@
-.ai-chat-box {
+.ai-menu-container {
+    position: absolute;
+    box-sizing: border-box;
+    left: -160px;
+    top: 0;
     font-family: 'Microsoft Yahei', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-    width: 160px;
-    padding: 5px;
+    width: 150px;
+    padding: 13px 8px;
     border: 1px solid #CE716B;
     border-radius: 3px;
     overflow: hidden;
     background: rgba(253, 240, 180, 0.8);
 }
 
-.ai-content {
+.ai-text-container {
 }
 
 .ai-text {
     font-size: 12px;
+    margin: 0;
 }
 
-.ai-line {
+.ai-choice-list {
+    margin: 0;
+    padding: 0;
     overflow: hidden;
 }
 
-.ai-btn {
+.ai-choice {
+    font-size: 0;
+    float: left;
+    display: inline-block;
+    list-style: none;
+    width: 50%;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.ai-choice-btn {
+    color: #CE716B;
+    font-size: 12px;
+}
+
+.ai-menu-btn {
     float: right;
     color: #CE716B;
     font-size: 12px;
+}
+
+.ai-hide {
+    display: none;
 }

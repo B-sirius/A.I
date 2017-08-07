@@ -6,14 +6,25 @@
     <link rel="stylesheet" href="ai.css">
 </head>
 <body>
-    <div class="ai-chat-box">
-        <div class="ai-content">
+    <!-- <div class="ai-menu-container">
+        <div class="ai-text-container">
             <p class="ai-text">带带带！</p>
         </div>
-        <a href="javascript:" class="ai-btn">
+        <ul class="ai-choice-list ai-hide">
+            <li class="ai-choice">
+                <a href="javascript:" class="ai-choice-btn">社保</a>
+            </li>
+            <li class="ai-choice">
+                <a href="javascript:" class="ai-choice-btn">社保！</a>
+            </li>
+            <li class="ai-choice">
+                <a href="javascript:" class="ai-choice-btn">带！</a>
+            </li>
+        </ul>
+        <a href="javascript:" class="ai-menu-btn">
             menu
         </a>
-    </div>
+    </div> -->
     <script src="ai.js"></script>
     <script>
         var containerStyle = {
@@ -28,6 +39,9 @@
             height: '48px',
         }
         var aDog = new AI('dog.gif', containerStyle, imgStyle);
+
+        aDog.initMenu();
+        aDog.menu.setText('带带带');
     </script>
 </body>
 </html>

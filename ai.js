@@ -5,6 +5,8 @@ let AI = function(imgSrc, containerStyle, imgStyle) {
     this.style = containerStyle;
     this.imgStyle = imgStyle;
 
+    this.menu = null;
+
     this.xBase = 1;
     this.yBase = 1;
 
@@ -56,24 +58,6 @@ AI.prototype._init = function() {
         // 绑定拖拽
         this.supportDrag();
         this.supportMenu();
-    });
-}
-
-// 初始化对右键菜单的支持
-AI.prototype.supportMenu = function() {
-    let _self = this;
-    // 点击ai时屏蔽右键菜单
-    window.oncontextmenu = function(e) {
-        if (e.target === _self.el) {
-            return false;
-        }
-    }
-
-    this.el.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        if (e.button === 2) { // 右键
-            
-        }
     });
 }
 
@@ -202,20 +186,75 @@ AI.prototype.launch = function() {
     requestAnimationFrame(nextMove);
 }
 
-let AImenu = function() {
-    this.el = this.createEl();
+// 初始化对右键菜单的支持
+AI.prototype.supportMenu = function() {
+    let _self = this;
+    // 点击ai时屏蔽右键菜单
+    window.oncontextmenu = function(e) {
+        if (e.target === _self.el) {
+            return false;
+        }
+    }
+
+    this.el.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        if (e.button === 2) { // 右键
+            _self.showMenu();
+        }
+    });
 }
 
-AImenu.prototype.getTextContent = function(text) {
-    let html = 
-    `<div class="ai-chat-box">
-        <div class="ai-content">
-            <p class="ai-text">${text}</p>
-        </div>
-        <a href="javascript:" class="ai-btn">
-            menu
-        </a>
-    </div>`
+AI.prototype.showMenu = function() {
+
+}
+
+AI.prototype.initMenu = function() {
+    this.menu = new AImenu();
+    this.menu.init();
+
+    this.el.appendChild(this.menu.refs.container);
+}
+
+let AImenu = function() {
+    this.refs = {};
+}
+
+AImenu.prototype.init = function() {
+    // 创建dom
+    let container = createElement('div', 'ai-menu-container');
+    let textContainer = createElement('div', 'ai-text-container');
+    let choiceList = createElement('ul', 'ai-choice-list');
+    let controlBtn = createElement('a', 'ai-menu-btn');
+    controlBtn.href = 'javascript:';
+    controlBtn.textContent = 'menu';
+
+    // 合体！
+    container.appendChild(textContainer);
+    container.appendChild(choiceList);
+    container.appendChild(controlBtn);
+
+    // 保存引用
+    this.refs.container = container;
+    this.refs.textContainer = textContainer;
+    this.refs.choiceList = choiceList;
+    this.refs.controlBtn = controlBtn;
+
+    for (let key in this.refs) {
+        this.refs[key].show = function() {
+            this.classList.remove('ai-hide');
+        }
+        this.refs[key].hide = function() {
+            this.classList.add('ai-hide');
+        }
+    }
+}
+
+AImenu.prototype.setText = function(text) {
+    let textNode = createElement('p', 'ai-text');
+    textNode.textContent = text;
+
+    this.refs.textContainer.innerHTML = '';
+    this.refs.textContainer.appendChild(textNode);
 }
 
 // 节流函数
