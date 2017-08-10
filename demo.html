@@ -39,9 +39,28 @@
             height: '48px',
         }
         var aDog = new AI('dog.gif', containerStyle, imgStyle);
+        aDog.menu.refs.choiceList.hide();
+        aDog.menu.refs.textContainer.show();
 
-        aDog.initMenu();
         aDog.menu.setText('带带带');
+
+        let choiceList = [
+            {
+                text: '社保！',
+                fn: function() {
+                    this.launch();
+                    this.toggleShow();
+                }
+            },
+            {
+                text: '异世界传送',
+                fn: function() {
+                    window.location = 'http://www.baidu.com';
+                }
+            }
+        ];
+
+        aDog.menu.setChoice(choiceList);
     </script>
 </body>
 </html>

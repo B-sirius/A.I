@@ -17,12 +17,14 @@ let AI = function(imgSrc, containerStyle, imgStyle) {
 AI.prototype._init = function() {
     this.el = createElement('div', 'ai-container');
 
-    let img = new Image();
-    img.src = this.imgSrc;
-    setStyle(img, this.imgStyle);
+    this.clickArea = new Image();
+    this.clickArea.src = this.imgSrc;
+    setStyle(this.clickArea, this.imgStyle);
+
+    this.supportMenu();
 
     let loadPromise = new Promise((resolve, reject) => {
-        img.onload = function() {
+        this.clickArea.onload = function() {
             resolve();
         }
     });
@@ -52,12 +54,11 @@ AI.prototype._init = function() {
         }
 
         // 插入dom
-        _self.el.appendChild(img);
+        _self.el.appendChild(this.clickArea);
         document.body.insertBefore(_self.el, document.body.firstChild);
 
         // 绑定拖拽
         this.supportDrag();
-        this.supportMenu();
     });
 }
 
@@ -188,10 +189,12 @@ AI.prototype.launch = function() {
 
 // 初始化对右键菜单的支持
 AI.prototype.supportMenu = function() {
+    this.initMenu();
+
     let _self = this;
     // 点击ai时屏蔽右键菜单
     window.oncontextmenu = function(e) {
-        if (e.target === _self.el) {
+        if (e.target === _self.clickArea) {
             return false;
         }
     }
@@ -199,24 +202,34 @@ AI.prototype.supportMenu = function() {
     this.el.addEventListener('mousedown', function(e) {
         e.preventDefault();
         if (e.button === 2) { // 右键
-            _self.showMenu();
+            MenuController['choice'].apply(_self.menu);
+            _self.toggleShow();
         }
     });
 }
 
-AI.prototype.showMenu = function() {
-
+AI.prototype.toggleShow = function() {
+    if (this.menu.refs.container.visible) {
+        this.menu.refs.container.hide();
+    } else {
+        this.menu.refs.container.show();
+    }
 }
 
 AI.prototype.initMenu = function() {
     this.menu = new AImenu();
+    this.menu.ai = this;
+
     this.menu.init();
 
     this.el.appendChild(this.menu.refs.container);
+
+    this.menu.refs.container.hide();
 }
 
 let AImenu = function() {
     this.refs = {};
+    this.curr = 'home';
 }
 
 AImenu.prototype.init = function() {
@@ -239,14 +252,22 @@ AImenu.prototype.init = function() {
     this.refs.choiceList = choiceList;
     this.refs.controlBtn = controlBtn;
 
+    // 为菜单的元素提供显示与隐藏方法
     for (let key in this.refs) {
         this.refs[key].show = function() {
             this.classList.remove('ai-hide');
+            this.visible = true;
         }
         this.refs[key].hide = function() {
             this.classList.add('ai-hide');
+            this.visible = false;
         }
     }
+
+    let _self = this;
+    this.refs.controlBtn.addEventListener('click', function() {
+        MenuController[_self.curr].apply(_self);
+    });
 }
 
 AImenu.prototype.setText = function(text) {
@@ -255,6 +276,44 @@ AImenu.prototype.setText = function(text) {
 
     this.refs.textContainer.innerHTML = '';
     this.refs.textContainer.appendChild(textNode);
+}
+
+AImenu.prototype.setChoice = function(list) {
+    let fragment = document.createDocumentFragment();
+    for (let choice of list) {
+        let li = createElement('li', 'ai-choice');
+        let a = createElement('a', 'ai-choice-btn');
+        a.textContent = choice.text;
+        a.href = 'javascript:';
+
+        let _self = this;
+        a.addEventListener('click', function() {
+            choice.fn.apply(_self.ai);
+        });
+
+        li.appendChild(a);
+        fragment.appendChild(li);
+    }
+
+    this.refs.choiceList.innerHTML = '';
+    this.refs.choiceList.appendChild(fragment);
+}
+
+let MenuController = {
+    'home': function() {
+        this.refs.textContainer.hide();
+        this.refs.choiceList.show();
+
+        this.refs.controlBtn.textContent = 'back';
+        this.curr = 'choice';
+    },
+    'choice': function() {
+        this.refs.choiceList.hide();
+        this.refs.textContainer.show();
+
+        this.refs.controlBtn.textContent = 'menu';
+        this.curr = 'home';
+    }
 }
 
 // 节流函数
