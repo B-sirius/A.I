@@ -15,8 +15,10 @@ let AI = function(imgSrc, containerStyle, imgStyle) {
 
 // 初始化
 AI.prototype._init = function() {
+    // 创建元素
     this.el = createElement('div', 'ai-container');
 
+    // 指定可点击区域为图片
     this.clickArea = new Image();
     this.clickArea.src = this.imgSrc;
     setStyle(this.clickArea, this.imgStyle);
