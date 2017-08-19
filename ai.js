@@ -16,14 +16,23 @@ let AI = function(imgSrc, containerStyle, imgStyle) {
 // 初始化
 AI.prototype._init = function() {
     // 创建元素
-    this.el = createElement('div', 'ai-container');
+    this._initContainer();
 
     // 指定可点击区域为图片
+    this._initClickArea();
+
+    this.supportMenu();
+}
+
+AI.prototype._initContainer = function() {
+    this.el = createElement('div', 'ai-container');
+}
+
+// 点击区域其实就是图片的部分
+AI.prototype._initClickArea = function() {
     this.clickArea = new Image();
     this.clickArea.src = this.imgSrc;
     setStyle(this.clickArea, this.imgStyle);
-
-    this.supportMenu();
 
     let loadPromise = new Promise((resolve, reject) => {
         this.clickArea.onload = function() {
@@ -31,11 +40,13 @@ AI.prototype._init = function() {
         }
     });
 
+    // 图片加载完成后
     let _self = this;
     loadPromise.then(() => {
-        // 设定样式
+        // 设定容器样式
         setStyle(this.el, this.style);
 
+        // 保存容器的大小
         _self.width = getNum(this.el.style.width);
         _self.height = getNum(this.el.style.height);
 
@@ -59,7 +70,7 @@ AI.prototype._init = function() {
         _self.el.appendChild(this.clickArea);
         document.body.insertBefore(_self.el, document.body.firstChild);
 
-        // 绑定拖拽
+        // 为容器绑定拖拽
         this.supportDrag();
     });
 }
@@ -145,29 +156,35 @@ AI.prototype.launch = function() {
     let attrition = 5 / 60; // 速度损耗，同样帧为单位
     let angle = Math.random() * Math.PI * 2;
 
+    // 网页可视区域大小
     let mapWidth = document.documentElement.clientWidth;
     let mapHeight = document.documentElement.clientHeight;
 
     let x = getNum(this.el.style[this.xKey]);
     let y = getNum(this.el.style[this.yKey]);
 
+    // 每帧的位移
+    let dX = speed * Math.cos(angle);
+    let dY = speed * Math.sin(angle);
+
+    let attritionX = attrition * Math.cos(angle);
+    let attritionY = attrition * Math.sin(angle);
+
     let _self = this;
     let nextMove = function() {
-        // 每帧的位移
-        let dX = speed * Math.cos(angle);
-        let dy = speed * Math.sin(angle);
-
         x += dX;
-        y += dy;
+        y += dY;
 
         // 碰撞检测
         if (x < 0 || x > mapWidth - _self.width) {
-            angle = -angle + Math.PI;
+            dX = -dX;
+            attritionX = -attritionX;
             x = x < 0 ? 0 : mapWidth - _self.width;
         }
 
-        if (y < 0 || y > mapHeight - _self.width) {
-            angle = -angle;
+        if (y < 0 || y > mapHeight - _self.height) {
+            dY = -dY;
+            attritionY = -attritionY;
             y = y < 0 ? 0 : mapHeight - _self.height;
         }
 
@@ -175,11 +192,15 @@ AI.prototype.launch = function() {
         let style = {};
         style[_self.xKey] = x + 'px';
         style[_self.yKey] = y + 'px';
+
+        // 绘制样式
         setStyle(_self.el, style);
 
         // 速度损耗
-        speed -= attrition;
-        if (speed < 1) {
+        dX -= attritionX;
+        dY -= attritionY;
+
+        if (Math.abs(dX) < 1 && Math.abs(dY) < 1) {
             return;
         }
 
@@ -191,7 +212,8 @@ AI.prototype.launch = function() {
 
 // 初始化对右键菜单的支持
 AI.prototype.supportMenu = function() {
-    this.initMenu();
+    // 生成菜单
+    this._initMenu();
 
     let _self = this;
     // 点击ai时屏蔽右键菜单
@@ -218,7 +240,7 @@ AI.prototype.toggleShow = function() {
     }
 }
 
-AI.prototype.initMenu = function() {
+AI.prototype._initMenu = function() {
     this.menu = new AImenu();
     this.menu.ai = this;
 
