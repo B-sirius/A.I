@@ -1,3 +1,7 @@
+.ai-container {
+    z-index: 999;
+}
+
 .ai-menu-container {
     position: absolute;
     box-sizing: border-box;
